@@ -34,6 +34,7 @@ public class AutorDTO {
 	public void setPaisDeOrigen(String paisDeOrigen) {
 		this.paisDeOrigen = paisDeOrigen;
 	}
+	
 	public List<LibroDTO> getLibros() {
 		return libros;
 	}

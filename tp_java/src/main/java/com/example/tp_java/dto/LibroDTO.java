@@ -6,7 +6,7 @@ public class LibroDTO {
 	private String titulo;
 	private String genero;
 	private Integer anio;
-	private AutorDTO autor;
+	//private AutorDTO autor;
 	
 	public Long getId() {
 		return id;
@@ -33,12 +33,12 @@ public class LibroDTO {
 		this.anio = anio;
 	}
 	
-	public AutorDTO getAutor() {
+	/* public AutorDTO getAutor() {
 		return autor;
 	}
 	public void setAutor(AutorDTO autor) {
 		this.autor = autor;
-	}
+	}*/
 	
 	
 }

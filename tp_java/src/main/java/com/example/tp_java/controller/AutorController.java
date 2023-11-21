@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.tp_java.dto.AutorMapper;
 import com.example.tp_java.dto.LibroDTO;
 import com.example.tp_java.model.Autor;
+import com.example.tp_java.model.Libro;
 import com.example.tp_java.dto.AutorDTO;
 import com.example.tp_java.repository.AutorRepository;
 
@@ -70,16 +71,16 @@ public class AutorController {
 	}
 	
 	@PostMapping("/autor")
-	public ResponseEntity<?> agregarAutor(@RequestBody @Validated AutorDTO a) {
+	public ResponseEntity<?> agregarAutor(@RequestBody @Validated Autor a) {
 		try {
 			
 			System.out.println(a.toString());
 			
-			for(LibroDTO l : a.getLibros()) {
+			for(Libro l : a.getLibros()) {
 				l.setAutor(a);
 			}
 			
-			autorRepository.save(autorMapper.dtoToEntity(a));
+			autorRepository.save(a);
 			
 			return new ResponseEntity<String>("Autor agregado", HttpStatus.OK);
 		}
@@ -121,7 +122,7 @@ public class AutorController {
 			
 			if(aOpt.isPresent()) {
 				
-				autorRepository.save(autorMapper.dtoToEntity(a));
+				autorRepository.deleteById(a.getId());
 				
 				return new ResponseEntity<String>("Autor eliminado", HttpStatus.OK);
 			}
@@ -171,4 +172,20 @@ public class AutorController {
 		}
 	}
 	
+	@GetMapping("/anio/{year}")
+	public ResponseEntity<?> obtenerPorAnioLibro(@PathVariable Integer year) {
+		if(year == null) {
+			return new ResponseEntity<String>("Falta parametro lastname", HttpStatus.NOT_FOUND);
+		}
+		try {
+			
+			List<Autor> entities = autorRepository.buscarPorAnioLibro(year); 
+			
+			return new ResponseEntity<List<AutorDTO>>(autorMapper.lstEntityToLstDto(entities), HttpStatus.OK);
+
+		}
+		catch (Exception e) {
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+	}
 }
