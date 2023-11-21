@@ -18,7 +18,7 @@ public interface AutorRepository extends CrudRepository<Autor, Long> {
 
 	List<Autor>findAllByPaisDeOrigen(String pais);
 	
-	@Query("select a from Autor a "
+	@Query("select distinct a from Autor a "
 			+ "inner join a.libros l "
 			+ "where a.apellido =:lastname "
 			+ "and l.genero =:genre")

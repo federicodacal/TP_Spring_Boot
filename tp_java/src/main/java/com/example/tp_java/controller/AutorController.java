@@ -30,7 +30,7 @@ import com.example.tp_java.repository.AutorRepository;
 public class AutorController {
 	
 	@Autowired
-	AutorRepository autorRepository;
+	AutorRepository autorRepository; // Singleton de la entidad para no generar múltiples objetos
 	
 	@Autowired
 	AutorMapper autorMapper;
@@ -154,13 +154,13 @@ public class AutorController {
 	}
 	
 	@GetMapping("/autorApellido/{lastname}")
-	public ResponseEntity<?> obtenerPorApellidoYGeneroPoema(@PathVariable String lastname) {
+	public ResponseEntity<?> obtenerPorApellidoYGeneroNovela(@PathVariable String lastname) {
 		if(lastname == null) {
 			return new ResponseEntity<String>("Falta parametro lastname", HttpStatus.NOT_FOUND);
 		}
 		try {
 			
-			String genre = "Poema";
+			String genre = "Novela";
 			
 			List<Autor> entities = autorRepository.buscarPorApellidoYGenero(lastname, genre); 
 			
