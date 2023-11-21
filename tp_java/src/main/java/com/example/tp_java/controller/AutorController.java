@@ -1,8 +1,11 @@
 package com.example.tp_java.controller;
 
 import java.util.ArrayList;
-import java.util.List;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -15,41 +18,32 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.tp_java.dto.AutorMapper;
+import com.example.tp_java.dto.LibroDTO;
 import com.example.tp_java.model.Autor;
+import com.example.tp_java.dto.AutorDTO;
+import com.example.tp_java.repository.AutorRepository;
 
 @RestController
 @RequestMapping("/api")
 public class AutorController {
+	
+	@Autowired
+	AutorRepository autorRepository;
+	
+	@Autowired
+	AutorMapper autorMapper;
 
 	@GetMapping("/autores")
 	public ResponseEntity<?> traerAutores() {
-		List<Autor> autores = new ArrayList<Autor>();
-		
-		Autor a1 = new Autor();
-		Autor a2 = new Autor();
-		Autor a3 = new Autor();
-		
+			
 		try {
-			a1.setId(1L);
-			a1.setApellido("Poe");
-			a1.setNombre("Edgar");
-			a1.setPaisDeOrigen("USA");
-				
-			a2.setId(2L);
-			a2.setApellido("Goethe");
-			a2.setNombre("J. W.");
-			a2.setPaisDeOrigen("Alemania");
 			
-			a3.setId(3L);
-			a3.setApellido("Tolstoy");
-			a3.setNombre("Leon");
-			a3.setPaisDeOrigen("Rusia");
+			List<Autor> autores = new ArrayList<>();
 			
-			autores.add(a1);
-			autores.add(a2);
-			autores.add(a3);
+			autores = (List<Autor>) autorRepository.findAll();
 			
-			return new ResponseEntity<List<Autor>>(autores, HttpStatus.OK);
+			return new ResponseEntity<List<AutorDTO>>(autorMapper.lstEntityToLstDto(autores), HttpStatus.OK);
 		}
 		catch (Exception e) {
 			return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -59,31 +53,122 @@ public class AutorController {
 	@GetMapping("/autor/{id}")
 	public ResponseEntity<?> traerAutor(@PathVariable Long id) {
 		try {
-			return new ResponseEntity<String>("Hola", HttpStatus.OK);
+			
+			Optional<Autor> aOpt = autorRepository.findById(id);
+			
+			if(aOpt.isPresent()) {
+				return new ResponseEntity<AutorDTO>(autorMapper.entityToDto(aOpt.get()), HttpStatus.OK);
+			}
+			else {
+				return new ResponseEntity<String>("Autor no encontrado con id " + id, HttpStatus.NOT_FOUND);
+			}
+			
 		}
 		catch (Exception e) {
-			return new ResponseEntity<String>("Autor no encontrado con id " + id, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 	}
 	
 	@PostMapping("/autor")
-	public ResponseEntity<?> agregarAutor(@RequestBody @Validated Autor a) {
+	public ResponseEntity<?> agregarAutor(@RequestBody @Validated AutorDTO a) {
 		try {
-			return new ResponseEntity<String>("Hola", HttpStatus.OK);
+			
+			System.out.println(a.toString());
+			
+			for(LibroDTO l : a.getLibros()) {
+				l.setAutor(a);
+			}
+			
+			autorRepository.save(autorMapper.dtoToEntity(a));
+			
+			return new ResponseEntity<String>("Autor agregado", HttpStatus.OK);
 		}
 		catch (Exception e) {
-			return new ResponseEntity<String>(e.getMessage(), HttpStatus.NOT_FOUND);
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 	}
 	
-	@PutMapping("/autor/{id}")
-	public void modificarAutor() {
-		
+	@PutMapping("/autor")
+	public ResponseEntity<?> modificarAutor(@RequestBody @Validated AutorDTO a) {
+		try {
+			
+			System.out.println(a.toString());
+			
+			Optional<Autor> aOpt = autorRepository.findById(a.getId());
+			
+			if(aOpt.isPresent()) {
+				
+				autorRepository.save(autorMapper.dtoToEntity(a));
+				
+				return new ResponseEntity<String>("Autor modificado", HttpStatus.OK);
+			}
+			else {
+				return new ResponseEntity<String>("Autor no encontrado con id " + a.getId(), HttpStatus.NOT_FOUND);
+			}
+		}
+		catch (Exception e) {
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
 	}
 	
 	@DeleteMapping("/autor")
-	public void eliminarAutor() {
+	public ResponseEntity<?> eliminarAutor(@RequestBody @Validated AutorDTO a) {
+		try {
+			
+			System.out.println(a.toString());
+			
+			Optional<Autor> aOpt = autorRepository.findById(a.getId());
+			
+			if(aOpt.isPresent()) {
+				
+				autorRepository.save(autorMapper.dtoToEntity(a));
+				
+				return new ResponseEntity<String>("Autor eliminado", HttpStatus.OK);
+			}
+			else {
+				return new ResponseEntity<String>("Autor no encontrado con id " + a.getId(), HttpStatus.NOT_FOUND);
+			}
+		}
+		catch (Exception e) {
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+	}
+	
+	@GetMapping("/autores/{pais}")
+	public ResponseEntity<?> obtenerAutoresPorPais(@PathVariable String pais) {
 		
+		if(pais == null) {
+			return new ResponseEntity<String>("Falta parametro pais", HttpStatus.NOT_FOUND);
+		}
+		try { 
+			
+			List<Autor> entities = autorRepository.findAllByPaisDeOrigen(pais); 
+			
+			return new ResponseEntity<List<AutorDTO>>(autorMapper.lstEntityToLstDto(entities), HttpStatus.OK);
+
+		}
+		catch (Exception e) {
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+	}
+	
+	@GetMapping("/autorApellido/{lastname}")
+	public ResponseEntity<?> obtenerPorApellidoYGeneroPoema(@PathVariable String lastname) {
+		if(lastname == null) {
+			return new ResponseEntity<String>("Falta parametro lastname", HttpStatus.NOT_FOUND);
+		}
+		try {
+			
+			String genre = "Poema";
+			
+			List<Autor> entities = autorRepository.buscarPorApellidoYGenero(lastname, genre); 
+			
+			return new ResponseEntity<List<AutorDTO>>(autorMapper.lstEntityToLstDto(entities), HttpStatus.OK);
+
+		}
+		catch (Exception e) {
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
 	}
 	
 }

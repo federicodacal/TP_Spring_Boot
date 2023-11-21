@@ -1,23 +1,46 @@
 package com.example.tp_java.model;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.util.List;
 
-public class Autor {
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
+
+@Entity
+@Table(name = "sys_autor")
+public class Autor implements Serializable {
 	
-	@NotNull
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5374740289681984600L;
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "autor_id")
 	private Long id;
 	
 	@NotBlank
+	@Column(name = "autor_nombre")
 	private String nombre;
 	
 	@NotBlank
+	@Column(name = "autor_apellido")
 	private String apellido;
 	
 	@NotBlank
+	@Column(name = "autor_pais_de_origen")
 	private String paisDeOrigen;
 	
-	//private Libros;
+	@OneToMany(mappedBy = "autor", cascade = CascadeType.ALL)
+	private List<Libro> libros;
 	
 	public Long getId() {
 		return id;
@@ -42,6 +65,12 @@ public class Autor {
 	}
 	public void setPaisDeOrigen(String paisDeOrigen) {
 		this.paisDeOrigen = paisDeOrigen;
+	}
+	public List<Libro> getLibros() {
+		return libros;
+	}
+	public void setLibros(List<Libro> libros) {
+		this.libros = libros;
 	}
 	@Override
 	public String toString() {
